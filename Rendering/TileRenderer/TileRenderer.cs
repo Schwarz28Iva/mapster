@@ -13,14 +13,15 @@ public static class TileRenderer
         BaseShape? baseShape = null;
 
         var featureType = feature.Type;
-        if (feature.Properties.Any(p => p.Key == "highway" && MapFeature.HighwayTypes.Any(v => p.Value.StartsWith(v))))
+         MapFeature.HighwayTypes hyghway_results;
+        if (feature.Properties.Any(p => p.Key == terrainTypes.highway && Enum.TryParse(p.Value, true, out hyghway_results)))
         {
             var coordinates = feature.Coordinates;
             var road = new Road(coordinates);
             baseShape = road;
             shapes.Enqueue(road, road.ZIndex);
         }
-        else if (feature.Properties.Any(p => p.Key.StartsWith("water")) && feature.Type != GeometryType.Point)
+        else if (feature.Properties.Any(p => p.Key == terrainTypes.water) && feature.Type != GeometryType.Point)
         {
             var coordinates = feature.Coordinates;
 
@@ -42,47 +43,57 @@ public static class TileRenderer
             baseShape = popPlace;
             shapes.Enqueue(popPlace, popPlace.ZIndex);
         }
-        else if (feature.Properties.Any(p => p.Key.StartsWith("railway")))
+        else if (feature.Properties.Any(p => p.Key == terrainTypes.railway))
         {
             var coordinates = feature.Coordinates;
             var railway = new Railway(coordinates);
             baseShape = railway;
             shapes.Enqueue(railway, railway.ZIndex);
         }
-        else if (feature.Properties.Any(p => p.Key.StartsWith("natural") && featureType == GeometryType.Polygon))
+        else if (feature.Properties.Any(p => p.Key == terrainTypes.natural && featureType == GeometryType.Polygon))
         {
             var coordinates = feature.Coordinates;
             var geoFeature = new GeoFeature(coordinates, feature);
             baseShape = geoFeature;
             shapes.Enqueue(geoFeature, geoFeature.ZIndex);
         }
-        else if (feature.Properties.Any(p => p.Key.StartsWith("boundary") && p.Value.StartsWith("forest")))
+        else if (feature.Properties.Any(p => p.Key == terrainTypes.boundary 
+            && Enum.TryParse<terrainTypesLand>(p.Value, true, out var land_type_results) && land_type_results is terrainTypesLand.forest))
         {
             var coordinates = feature.Coordinates;
             var geoFeature = new GeoFeature(coordinates, GeoFeature.GeoFeatureType.Forest);
             baseShape = geoFeature;
             shapes.Enqueue(geoFeature, geoFeature.ZIndex);
         }
-        else if (feature.Properties.Any(p => p.Key.StartsWith("landuse") && (p.Value.StartsWith("forest") || p.Value.StartsWith("orchard"))))
+         else if (feature.Properties.Any(p => p.Key == terrainTypes.landuse 
+            && Enum.TryParse<terrainTypesLand>(p.Value, true, out var land_type_results)
+            && land_type_results is terrainTypesLand.forest or terrainTypesLand.orchard))
         {
             var coordinates = feature.Coordinates;
             var geoFeature = new GeoFeature(coordinates, GeoFeature.GeoFeatureType.Forest);
             baseShape = geoFeature;
             shapes.Enqueue(geoFeature, geoFeature.ZIndex);
         }
-        else if (feature.Type == GeometryType.Polygon && feature.Properties.Any(p
-                     => p.Key.StartsWith("landuse") && (p.Value.StartsWith("residential") || p.Value.StartsWith("cemetery") || p.Value.StartsWith("industrial") || p.Value.StartsWith("commercial") ||
-                                                        p.Value.StartsWith("square") || p.Value.StartsWith("construction") || p.Value.StartsWith("military") || p.Value.StartsWith("quarry") ||
-                                                        p.Value.StartsWith("brownfield"))))
+        else if (feature.Type == GeometryType.Polygon && feature.Properties.Any(
+                p => p.Key == terrainTypes.landuse
+                && Enum.TryParse<terrainTypesLand>(p.Value, true, out var land_type_results)
+                && land_type_results is terrainTypesLand.cemetery
+                or terrainTypesLand.industrial or terrainTypesLand.commercial
+                or terrainTypesLand.square or terrainTypesLand.construction
+                or terrainTypesLand.military or terrainTypesLand.quarry or terrainTypesLand.brownfield))
         {
             var coordinates = feature.Coordinates;
             var geoFeature = new GeoFeature(coordinates, GeoFeature.GeoFeatureType.Residential);
             baseShape = geoFeature;
             shapes.Enqueue(geoFeature, geoFeature.ZIndex);
         }
-        else if (feature.Type == GeometryType.Polygon && feature.Properties.Any(p
-                     => p.Key.StartsWith("landuse") && (p.Value.StartsWith("farm") || p.Value.StartsWith("meadow") || p.Value.StartsWith("grass") || p.Value.StartsWith("greenfield") ||
-                                                        p.Value.StartsWith("recreation_ground") || p.Value.StartsWith("winter_sports") || p.Value.StartsWith("allotments"))))
+        else if (feature.Type == GeometryType.Polygon && feature.Properties.Any(
+                p => p.Key == terrainTypes.landuse 
+                && Enum.TryParse<terrainTypesLand>(p.Value, true, out var land_type_results)
+                && land_type_results is terrainTypesLand.farm or terrainTypesLand.meadow
+                or terrainTypesLand.grass or terrainTypesLand.greenfield
+                or terrainTypesLand.recreation_ground or terrainTypesLand.winter_sports
+                or terrainTypesLand.allotments))
         {
             var coordinates = feature.Coordinates;
             var geoFeature = new GeoFeature(coordinates, GeoFeature.GeoFeatureType.Plain);
@@ -90,7 +101,10 @@ public static class TileRenderer
             shapes.Enqueue(geoFeature, geoFeature.ZIndex);
         }
         else if (feature.Type == GeometryType.Polygon &&
-                 feature.Properties.Any(p => p.Key.StartsWith("landuse") && (p.Value.StartsWith("reservoir") || p.Value.StartsWith("basin"))))
+                feature.Properties.Any(p => p.Key == terrainTypes.landuse
+                && Enum.TryParse<terrainTypesLand>(p.Value, true, out var land_type_results)
+                && land_type_results is terrainTypesLand.reservoir
+                or terrainTypesLand.basin))
         {
             var coordinates = feature.Coordinates;
             var geoFeature = new GeoFeature(coordinates, GeoFeature.GeoFeatureType.Water);
@@ -104,14 +118,14 @@ public static class TileRenderer
             baseShape = geoFeature;
             shapes.Enqueue(geoFeature, geoFeature.ZIndex);
         }
-        else if (feature.Type == GeometryType.Polygon && feature.Properties.Any(p => p.Key.StartsWith("leisure")))
+        else if (feature.Type == GeometryType.Polygon && feature.Properties.Any(p => p.Key == terrainTypes.leisure))
         {
             var coordinates = feature.Coordinates;
             var geoFeature = new GeoFeature(coordinates, GeoFeature.GeoFeatureType.Residential);
             baseShape = geoFeature;
             shapes.Enqueue(geoFeature, geoFeature.ZIndex);
         }
-        else if (feature.Type == GeometryType.Polygon && feature.Properties.Any(p => p.Key.StartsWith("amenity")))
+        else if(feature.Type == GeometryType.Polygon && feature.Properties.Any(p => p.Key == terrainTypes.amenity))
         {
             var coordinates = feature.Coordinates;
             var geoFeature = new GeoFeature(coordinates, GeoFeature.GeoFeatureType.Residential);
@@ -147,7 +161,6 @@ public static class TileRenderer
         while (shapes.Count > 0)
         {
             var entry = shapes.Dequeue();
-            // FIXME: Hack
             if (entry.ScreenCoordinates.Length < 2)
             {
                 continue;

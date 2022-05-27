@@ -105,6 +105,47 @@ public enum GeometryType : byte
     Polygon,
     Point
 }
+public enum terrainTypes : int
+{
+        admin_level,
+        amenity,
+        boundary,
+        building,
+        farm,
+        highway,
+        landuse,
+        leisure,
+        name,
+        natural,
+        place,
+        railway,
+        reservoir,
+        residential,
+        water
+}
+public enum terrainTypesLand
+{
+    allotments,
+    basin,
+    brownfield,
+    cemetery,
+    commercial,
+    construction,
+    farm,
+    forest,
+    grass,
+    greenfield,
+    industrial,
+    meadow,
+    military,
+    orchard,
+    quarry,
+    recreation_ground,
+    reservoir,
+    residential,
+    square,
+    winter_sports
+}
 
 [StructLayout(LayoutKind.Explicit, Pack = 1)]
 public struct PropertyEntryList
@@ -117,9 +158,15 @@ public struct PropertyEntryList
 public struct MapFeature
 {
     // https://wiki.openstreetmap.org/wiki/Key:highway
-    public static string[] HighwayTypes =
-    {
-        "motorway", "trunk", "primary", "secondary", "tertiary", "unclassified", "residential", "road"
+    public enum HighwayTypes{
+        motorway,
+        primary,
+        residential,
+        road,
+        secondary,
+        tertiary,
+        trunk,
+        unclassified
     };
 
     [FieldOffset(0)] public long Id;

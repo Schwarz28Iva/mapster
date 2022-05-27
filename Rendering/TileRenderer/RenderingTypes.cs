@@ -108,7 +108,7 @@ public struct GeoFeature : BaseShape
     public GeoFeature(ReadOnlySpan<Coordinate> c, MapFeatureData feature)
     {
         IsPolygon = feature.Type == GeometryType.Polygon;
-        var naturalKey = feature.Properties.FirstOrDefault(x => x.Key == "natural").Value;
+        var naturalKey = feature.Properties.FirstOrDefault(x => x.Key == terrainTypes.natural).Value;
         Type = GeoFeatureType.Unknown;
         if (naturalKey != null)
         {
@@ -202,8 +202,7 @@ public struct PopulatedPlace : BaseShape
         for (var i = 0; i < c.Length; i++)
             ScreenCoordinates[i] = new PointF((float)MercatorProjection.lonToX(c[i].Longitude),
                 (float)MercatorProjection.latToY(c[i].Latitude));
-        var name = feature.Properties.FirstOrDefault(x => x.Key == "name").Value;
-
+var name = feature.Properties.FirstOrDefault(x => x.Key == terrainTypes.name).Value;
         if (feature.Label.IsEmpty)
         {
             ShouldRender = false;
@@ -224,7 +223,7 @@ public struct PopulatedPlace : BaseShape
             return false;
         }
         foreach (var entry in feature.Properties)
-            if (entry.Key.StartsWith("place"))
+            if (entry.Key == terrainTypes.place)
             {
                 if (entry.Value.StartsWith("city") || entry.Value.StartsWith("town") ||
                     entry.Value.StartsWith("locality") || entry.Value.StartsWith("hamlet"))
@@ -264,11 +263,11 @@ public struct Border : BaseShape
         var foundLevel = false;
         foreach (var entry in feature.Properties)
         {
-            if (entry.Key.StartsWith("boundary") && entry.Value.StartsWith("administrative"))
+            if (entry.Key == terrainTypes.boundary && entry.Value.StartsWith("administrative"))
             {
                 foundBoundary = true;
             }
-            if (entry.Key.StartsWith("admin_level") && entry.Value == "2")
+            if (entry.Key == terrainTypes.admin_level && entry.Value == "2")
             {
                 foundLevel = true;
             }

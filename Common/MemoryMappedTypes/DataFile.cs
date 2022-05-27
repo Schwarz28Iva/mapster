@@ -24,7 +24,8 @@ public readonly ref struct MapFeatureData
     public GeometryType Type { get; init; }
     public ReadOnlySpan<char> Label { get; init; }
     public ReadOnlySpan<Coordinate> Coordinates { get; init; }
-    public Dictionary<string, string> Properties { get; init; }
+   // public Dictionary<string, string> Properties { get; init; }
+    public Dictionary<terrainTypes, string> Properties { get; init; }
 }
 
 /// <summary>
@@ -181,11 +182,22 @@ public unsafe class DataFile : IDisposable
 
                 if (isFeatureInBBox)
                 {
-                    var properties = new Dictionary<string, string>(feature->PropertyCount);
+                    //var properties = new Dictionary<string, string>(feature->PropertyCount);
+
+                                        //changet dictionary to use the new enumerator instead of string
+                    var properties = new Dictionary<terrainTypes, string>(feature->PropertyCount);
+
                     for (var p = 0; p < feature->PropertyCount; ++p)
                     {
                         GetProperty(header.Tile.Value.StringsOffsetInBytes, header.Tile.Value.CharactersOffsetInBytes, p * 2 + feature->PropertiesOffset, out var key, out var value);
-                        properties.Add(key.ToString(), value.ToString());
+                       // properties.Add(key.ToString(), value.ToString());
+
+                        if(Enum.IsDefined(typeof(terrainTypes), key.ToString()))
+                        {
+                            // add keys to properties using the enumerator
+                            terrainTypes keys_to_add = (terrainTypes)Enum.Parse(typeof(terrainTypes), key.ToString());
+                            properties.Add(keys_to_add, value.ToString());
+                        }
                     }
 
                     if (!action(new MapFeatureData

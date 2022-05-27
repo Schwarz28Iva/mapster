@@ -69,7 +69,6 @@ public static class Program
     private static void CreateMapDataFile(ref MapData mapData, string filePath)
     {
         var usedNodes = new HashSet<long>();
-
         long featureIdCounter = -1;
         var featureIds = new List<long>();
         // var geometryTypes = new List<GeometryType>();
@@ -95,10 +94,8 @@ public static class Program
 
         foreach (var (tileId, _) in mapData.Tiles)
         {
-            // FIXME: Not thread safe
             usedNodes.Clear();
 
-            // FIXME: Not thread safe
             featureIds.Clear();
             labels.Clear();
 
@@ -110,7 +107,6 @@ public static class Program
             foreach (var way in mapData.Ways)
             {
                 var featureId = Interlocked.Increment(ref featureIdCounter);
-
                 var featureData = new FeatureData
                 {
                     Id = featureId,
@@ -119,6 +115,7 @@ public static class Program
                     PropertyValues = (totalPropertyCount, new List<string>(way.Tags.Count))
                 };
 
+                featureIds.Add(way.Id);
                 var geometryType = GeometryType.Polyline;
 
                 labels.Add(-1);
@@ -152,14 +149,11 @@ public static class Program
                     }
 
                     featureData.Coordinates.coordinates.Add(new Coordinate(node.Latitude, node.Longitude));
-                }
-
-                // This feature is not located within this tile, skip it
-                if (featureData.Coordinates.coordinates.Count == 0)
-                {
-                    // Remove the last item since we added it preemptively
-                    labels.RemoveAt(labels.Count - 1);
-                    continue;
+                    if (featureData.Coordinates.coordinates.Count == 0)
+                    {
+                        labels.RemoveAt(labels.Count - 1);
+                        continue;
+                    }
                 }
 
                 if (featureData.Coordinates.coordinates[0] == featureData.Coordinates.coordinates[^1])
@@ -182,6 +176,7 @@ public static class Program
 
             foreach (var (nodeId, node) in mapData.Nodes.Where(n => !usedNodes.Contains(n.Key)))
             {
+                
                 if (TiligSystem.GetTile(new Coordinate(node.Latitude, node.Longitude)) != tileId)
                 {
                     continue;
